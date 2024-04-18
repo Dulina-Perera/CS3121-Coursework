@@ -9,24 +9,9 @@ import polars as pl # type: ignore
 from colorama import Fore, Style
 
 
-def load_data():
-    # Load the data into a polars dataframe.
-    df = pl.read_csv("data.csv")
-    return df
-
-
-def cols(df):
-    # Print the column names of the dataframe.
-    for col in df.columns:
-        print(col)
-
-
 def col_domain(df, col):
-    # Print the unique values of a column.
-    unique_values = df[col].unique()
-
-    for val in unique_values:
-        print(val)
+    print(f'{Fore.BLACK + col}:')
+    print(*df[col].unique(), sep='\n', end='\n\n')
 
 
 def cols_with_missing_vals(df):
@@ -48,9 +33,9 @@ def cols_with_missing_vals(df):
 
 
 if __name__ == "__main__":
-    df = load_data()
+    df = pl.read_csv("data.csv")
+    df.describe()
 
-    cols(df)
-    print('\n')
-
-    cols_with_missing_vals(df)
+    # print(*df.columns, sep='\n', end='\n\n')
+    # col_domain(df, 'Timestamp')
+    # cols_with_missing_vals(df)
