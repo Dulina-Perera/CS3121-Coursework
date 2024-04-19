@@ -21,6 +21,7 @@ certifi=2024.2.2=py310h06a4308_0
 cffi=1.16.0=py310h5eee18b_0
 charset-normalizer=2.0.4=pyhd3eb1b0_0
 cloudpickle=3.0.0=pypi_0
+colorama=0.4.6=pypi_0
 colorlog=6.8.2=pypi_0
 comm=0.2.1=pyhd8ed1ab_0
 contourpy=1.2.0=pypi_0
@@ -120,6 +121,7 @@ packaging=23.2=pyhd8ed1ab_0
 pandas=2.2.0=pypi_0
 pandocfilters=1.5.0=pyhd3eb1b0_0
 parso=0.8.3=pyhd8ed1ab_0
+patsy=0.5.6=pypi_0
 pcre=8.45=h295c915_0
 pexpect=4.9.0=pyhd8ed1ab_0
 pickleshare=0.7.5=py_1003
@@ -175,6 +177,7 @@ soupsieve=2.5=py310h06a4308_0
 sqlalchemy=2.0.29=pypi_0
 sqlite=3.41.2=h5eee18b_0
 stack_data=0.6.2=pyhd8ed1ab_0
+statsmodels=0.14.2=pypi_0
 tabulate=0.9.0=pypi_0
 tenacity=8.2.3=pypi_0
 terminado=0.17.1=py310h06a4308_0
