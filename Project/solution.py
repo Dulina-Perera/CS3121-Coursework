@@ -6,6 +6,7 @@ import warnings
 
 from IPython.display import display # type: ignore
 
+from employee_preprocessor import EmployeePreprocessor
 from salary_analyzer import SalaryAnalyzer
 
 pd.set_option('display.max_columns', None)
@@ -15,27 +16,9 @@ warnings.filterwarnings("ignore")
 
 # %%
 # Load the data.
-attendance = pd.read_csv('Resources/attendance.csv')
 employees = pd.read_csv('Resources/employees.csv')
-holidays = pd.read_csv('Resources/holidays.csv')
-leaves = pd.read_csv('Resources/leaves.csv')
 salary_dict = pd.read_csv('Resources/salary_dictionary.csv')
 salaries = pd.read_csv('Resources/salary.csv')
-
-# salary_dict = pd.read_csv('Resources/salary_dictionary.csv')
-
-# %%
-# Get an overview of the data.
-# display(attendance.info(), attendance.head())
-# display(employees.info(), employees.head())
-# display(holidays.info(), holidays.head())
-# display(leaves.info(), leaves.head())
-# display(salaries.info(), salaries.head())
-
-# display(salary_dict.info(), salary_dict.head())
-
-# %% [markdown]
-# ## Handling Missing Values
 
 # %%
 def columns_with_missing_values(df):
@@ -87,37 +70,7 @@ def display_unique_values(df, columns):
         print(f"Unique values in column '{col}': {unique_values}", end="\n\n")
 
 # %% [markdown]
-# 1. **Attendance Dataset**
-
-# %%
-columns_with_missing_values(attendance)
-
-# %%
-for col in attendance.columns:
-    display(attendance[col].value_counts())
-
-# %% [markdown]
-# 2. **Employees Dataset**
-
-# %%
-def handle_employees():
-    employees.loc[employees['Date_Resigned'] == '0000-00-00', 'Date_Resigned'] = np.nan
-    employees.loc[employees['Date_Resigned'] == '\\N', 'Date_Resigned'] = np.nan
-
-    employees.loc[employees['Inactive_Date'] == '0000-00-00', 'Inactive_Date'] = np.nan
-    employees.loc[employees['Inactive_Date'] == '\\N', 'Inactive_Date'] = np.nan
-
-    employees.loc[employees['Reporting_emp_1'] == "\\N", 'Reporting_emp_1'] = np.nan
-
-    employees.drop('Reporting_emp_2', axis=1, inplace=True)
-
-    employees.loc[employees['Year_of_Birth'] == "'0000'", 'Year_of_Birth'] = np.nan
-
-# %%
-display(employees.describe())
-
-columns_with_missing_values(employees)
-# display_unique_values(employees, ['Marital_Status', 'Date_Resigned', 'Inactive_Date', 'Reporting_emp_1', 'Reporting_emp_2', 'Year_of_Birth'])
+# ## Preprocess Employees Dataset
 
 # %% [markdown]
 # ### Missing values are defined by the business context.
@@ -145,36 +98,64 @@ columns_with_missing_values(employees)
 # %%
 # Check if all active employees have a 'Date_Resigned' value of '\N' or '0000-00-00'. - Yes
 filtered = employees[employees['Status'] == 'Active']['Date_Resigned']
-# display(filtered.value_counts())
+display(filtered.value_counts())
 
 # Check if all active employees have a 'Inactive_Date' value of '\N' or '0000-00-00'. - Yes
 filtered = employees[employees['Status'] == 'Active']['Inactive_Date']
-# display(filtered.value_counts())
+display(filtered.value_counts())
 
 # Check if all inactive employees have a valid 'Inactive_Date'. - Yes
 filtered = employees[(employees['Status'] == 'Inactive') & ((employees['Inactive_Date'] == '0000-00-00') | (employees['Inactive_Date'] == '\\N'))]['Inactive_Date']
-# display(filtered.value_counts())
+display(filtered.value_counts())
 
 # Check if all inactive employees have resigned. - No
 filtered = employees[employees['Status'] == 'Inactive']['Date_Resigned']
-# display(filtered.value_counts())
+display(filtered.value_counts())
 
 # %%
-handle_employees()
+pp = EmployeePreprocessor(employees)
+pp.preprocess()
+
+# %%
+display(pp.employees.describe())
+
+columns_with_missing_values(pp.employees)
+# display_unique_values(pp.employees, ['Marital_Status', 'Date_Resigned', 'Inactive_Date', 'Reporting_emp_1', 'Year_of_Birth'])
+
+# %%
+# display(pp.employees[(pp.employees['Title'] == 'Ms') & (pp.employees['Gender'] == 'Male')])
+pd.set_option('display.max_rows', None)
+display(pp.employees[pp.employees['Title'].isna()])
+
+# %%
+
+
+
+
+
+#######################################################################################################################################################################################################################################################################################
+
+
+
+
 
 # %% [markdown]
 # ## Effect of Salary on Employee Attrition
 
 # %%
-analyser = SalaryAnalyzer(employees, salaries, salary_dict)
+al = SalaryAnalyzer(pp.employees, salaries, salary_dict)
 
-analyser.preprocess()
+al.preprocess()
 
 # %%
 pd.set_option('display.max_rows', None)
-display(analyser.salary_dict)
+display(al.salary_dict)
 
 # %%
-analyser.perform_logrank_test('Basic Salary')
+al.perform_logrank_test('Basic Salary')
+
+# %%
+display(al.salaries[al.salaries['No Pay'] > 0])
+display(al.salaries.columns.tolist())
 
 # %%
