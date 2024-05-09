@@ -65,11 +65,25 @@ class SalaryAnalyzer:
         self._calculate_resign_status()
 
 
-    def perform_logrank_test(self, category_column, event_column='Resign_Status', time_column='Days_Employed'):
-        self._calculate_slope(category_column)
+    def calculate_slope(self, column: str):
+        slope_data = {}
+        for employee, agg in self.salaries.groupby('Employee_No'):
+            x_values = []
+            y_values = []
+            for index, row in agg.iterrows():
+                x_values.append([index])  # Index as x-value
+                y_values.append(row[column])  # Column value as y-value
+
+            model = LinearRegression().fit(x_values, y_values)
+            slope_data[employee] = model.coef_[0]
         
-        decreasing = self.employees[self.employees['Slope'] == 'Decreasing']
-        not_decreasing = self.employees[self.employees['Slope'] == 'Not Decreasing']
+        self.employees[f'{column}_Slope'] = self.employees['Employee_No'].map(pd.DataFrame(slope_data.items(), columns=['Employee_No', f'{column}_Slope']).set_index('Employee_No')[f'{column}_Slope'])
+        self.employees[f'{column}_Slope'] = ['Decreasing' if slope < 0 else 'Not Decreasing' for slope in self.employees[f'{column}_Slope']]
+
+
+    def perform_logrank_test(self, category_column, event_column='Resign_Status', time_column='Days_Employed'):
+        decreasing = self.employees[self.employees[category_column] == 'Decreasing']
+        not_decreasing = self.employees[self.employees[category_column] == 'Not Decreasing']
 
         kmf = KaplanMeierFitter()
 
@@ -81,7 +95,7 @@ class SalaryAnalyzer:
         kmf.fit(not_decreasing[time_column], event_observed=not_decreasing[event_column], label='Not Decreasing')
         kmf.plot()
 
-        plt.title(f'Kaplan-Meier Curves for {category_column} Slope')
+        plt.title(f'Kaplan-Meier Curves for {category_column}')
         plt.xlabel(time_column)
         plt.ylabel('Survival Probability')
         plt.legend()
@@ -92,8 +106,6 @@ class SalaryAnalyzer:
 
         # Print results.
         results.print_summary(decimals=4)
-
-        self.employees.drop(['Slope'], axis=1, inplace=True)
 
 
     def _rename_columns(self):
@@ -143,12 +155,5 @@ class SalaryAnalyzer:
     def _calculate_resign_status(self):
         self.employees['Resign_Status'] = self.employees['Date_Resigned'].notnull().astype(int)
 
-
-    def _calculate_slope(self, column: str):
-        slope_data = {employee: LinearRegression().fit(data[['Year', 'Month']], data[column]).coef_[0] 
-                    for employee, data in self.salaries.groupby('Employee_No')}
-        
-        self.employees['Slope'] = self.employees['Employee_No'].map(pd.DataFrame(slope_data.items(), columns=['Employee_No', 'Slope']).set_index('Employee_No')['Slope'])
-        self.employees['Slope'] = ['Decreasing' if slope < 0 else 'Not Decreasing' for slope in self.employees['Slope']]
 
 # %%

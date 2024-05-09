@@ -1,6 +1,4 @@
 # %%
-import matplotlib.pyplot as plt # type: ignore
-import numpy as np # type: ignore
 import pandas as pd # type: ignore
 import warnings
 
@@ -125,7 +123,7 @@ columns_with_missing_values(pp.employees)
 # %%
 # display(pp.employees[(pp.employees['Title'] == 'Ms') & (pp.employees['Gender'] == 'Male')])
 pd.set_option('display.max_rows', None)
-display(pp.employees[pp.employees['Title'].isna()])
+display(pp.employees[pp.employees['Gender'].isna()])
 
 # %%
 
@@ -152,10 +150,16 @@ pd.set_option('display.max_rows', None)
 display(al.salary_dict)
 
 # %%
-al.perform_logrank_test('Basic Salary')
+al.calculate_slope('Basic Salary')
+al.perform_logrank_test('Basic Salary_Slope')
 
-# %%
-display(al.salaries[al.salaries['No Pay'] > 0])
-display(al.salaries.columns.tolist())
+al.calculate_slope('Net Salary')
+al.perform_logrank_test('Net Salary_Slope')
+
+al.calculate_slope('Total Earnings')
+al.perform_logrank_test('Total Earnings_Slope')
+
+al.calculate_slope('Total Deduction')
+al.perform_logrank_test('Total Deduction_Slope')
 
 # %%

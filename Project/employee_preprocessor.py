@@ -20,6 +20,9 @@ class EmployeePreprocessor:
 
 
     def preprocess(self):
+        # The column 'Employee_Code' serves no purpose.
+        self.employees.drop(columns=['Employee_Code'], inplace=True)
+
         # Handle different missing value representations.
         self.employees.loc[self.employees['Date_Resigned'] == '0000-00-00', 'Date_Resigned'] = np.nan
         self.employees.loc[self.employees['Date_Resigned'] == '\\N', 'Date_Resigned'] = np.nan
@@ -53,6 +56,14 @@ class EmployeePreprocessor:
 
         # Extract the first name and last name from the 'Name' column.
         self._extract_fname_and_lname()
+
+        # Resolve inconsistencies between the 'Title' and 'Marital_Status' columns.
+        self.employees.loc[(self.employees['Title'] == 'Mrs') & (self.employees['Marital_Status'].isna()), 'Marital_Status'] = 'Married'
+        self.employees.loc[(self.employees['Title'] == 'Ms') & (self.employees['Marital_Status'].isna()), 'Title'] = np.nan
+        self.employees.loc[(self.employees['Title'] == 'Ms') & (self.employees['Marital_Status'] == 'Single'), 'Title'] = 'Miss'
+        self.employees.loc[(self.employees['Title'] == 'Ms') & (self.employees['Marital_Status'] == 'Married'), 'Title'] = 'Mrs'
+
+        # Using 
 
 
     def _update_title_and_gender_on_name(self):
